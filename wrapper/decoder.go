@@ -6,6 +6,7 @@ package wrapper
 
 import (
 	"sync"
+
 	"github.com/chrisfelesoid/go-flif/internal/wrapper"
 )
 

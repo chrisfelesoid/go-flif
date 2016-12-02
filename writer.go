@@ -5,11 +5,13 @@
 package flif
 
 import (
-	"io"
-	"image"
-	"errors"
 	"bytes"
+	"errors"
+	"fmt"
+	"image"
 	"image/color"
+	"io"
+
 	"github.com/chrisfelesoid/go-flif/wrapper"
 )
 
@@ -60,23 +62,30 @@ func Encode(w io.Writer, m image.Image) error {
 	case 8:
 		img = wrapper.NewFlifImageFromRGBA(b.Dx(), b.Dy(), buf.Bytes())
 	default:
+		fmt.Println("hoge")
 		img = wrapper.NewFlifImageHDR(b.Dx(), b.Dy())
 		px := buf.Bytes()
+		col := b.Dx() * 8
 		for row := 0; row < b.Dy(); row++ {
-			is := row*b.Dx()*8
-			ie := is+b.Dx()*8+1
+			is := row * col
+			ie := is + col
 			img.WriteRowRGBA16(row, px[is:ie], 0)
 		}
 	}
+	defer img.Destroy()
 
 	enc := wrapper.NewFlifEncoder()
+	defer enc.Destroy()
 	enc.AddImage(img)
+	ret, err := enc.Encode()
+	if err != nil {
+		return err
+	}
 
-	var ret []byte
-	enc.EncodeMemory(&ret)
-
-	io.Copy(w, bytes.NewBuffer(ret))
+	_, err = io.Copy(w, bytes.NewBuffer(ret))
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
-

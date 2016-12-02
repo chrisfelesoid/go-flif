@@ -63,6 +63,7 @@ func Decode(r io.Reader) (image.Image, error) {
 	}
 
 	d := wrapper.NewFlifDecoder()
+	defer d.Destroy()
 	d.DecodeMemory(b)
 	fi := d.GetImage()
 

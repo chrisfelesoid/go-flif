@@ -5,7 +5,9 @@
 package wrapper
 
 import (
+	"errors"
 	"sync"
+
 	"github.com/chrisfelesoid/go-flif/internal/wrapper"
 )
 
@@ -14,6 +16,10 @@ type FlifImage struct {
 	images []*wrapper.CflifImage
 	once   sync.Once
 }
+
+var (
+	ErrOutOfRange = errors.New("index out of range")
+)
 
 func NewFlifImage(width, height int) *FlifImage {
 	img := wrapper.CflifCreateImage(width, height)
@@ -119,11 +125,15 @@ func (f *FlifImage) GetMetadata(name string) []byte {
 	return data
 }
 
-func (f *FlifImage) WriteRowRGBA8(row int, data []byte, index int) {
+func (f *FlifImage) WriteRowRGBA8(row int, data []byte, index int) error {
 	if row >= f.GetHeight() {
-		return
+		return ErrOutOfRange
+	}
+	if len(data) < f.GetWidth()*4 {
+		return ErrOutOfRange
 	}
 	wrapper.CflifImageWriteRowRGBA8(f.images[index], row, data)
+	return nil
 }
 
 func (f *FlifImage) ReadRowRGBA8(row, index int) []byte {
@@ -133,11 +143,15 @@ func (f *FlifImage) ReadRowRGBA8(row, index int) []byte {
 	return wrapper.CflifImageReadRowRGBA8(f.images[index], row)
 }
 
-func (f *FlifImage) WriteRowRGBA16(row int, data []byte, index int) {
+func (f *FlifImage) WriteRowRGBA16(row int, data []byte, index int) error {
 	if row >= f.GetHeight() {
-		return
+		return ErrOutOfRange
+	}
+	if len(data) < f.GetWidth()*4*2 {
+		return ErrOutOfRange
 	}
 	wrapper.CflifImageWriteRowRGBA16(f.images[index], row, data)
+	return nil
 }
 
 func (f *FlifImage) ReadRowRGBA16(row, index int) []byte {

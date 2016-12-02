@@ -5,7 +5,9 @@
 package wrapper
 
 import (
+	"fmt"
 	"sync"
+
 	"github.com/chrisfelesoid/go-flif/internal/wrapper"
 )
 
@@ -102,12 +104,21 @@ func (e *FlifEncoder) AddImage(image *FlifImage) {
 	}
 }
 
-func (e *FlifEncoder) EncodeFile(name string) int {
+func (e *FlifEncoder) EncodeFile(name string) error {
 	e.setOptions()
-	return wrapper.CflifEncoderEncodeFile(e.enc, name)
+	st := wrapper.CflifEncoderEncodeFile(e.enc, name)
+	if st == 0 {
+		return fmt.Errorf("encode error: %d", st)
+	}
+	return nil
 }
 
-func (e *FlifEncoder) EncodeMemory(data *[]byte) int {
+func (e *FlifEncoder) Encode() ([]byte, error) {
+	var data []byte
 	e.setOptions()
-	return wrapper.CflifEncoderEncodeMemory(e.enc, data)
+	st := wrapper.CflifEncoderEncodeMemory(e.enc, &data)
+	if st == 0 {
+		return nil, fmt.Errorf("encode error: %d", st)
+	}
+	return data, nil
 }
