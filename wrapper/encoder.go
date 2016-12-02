@@ -4,10 +4,13 @@
 
 package wrapper
 
-import "sync"
+import (
+	"sync"
+	"github.com/chrisfelesoid/go-flif/internal/wrapper"
+)
 
 type FlifEncoder struct {
-	enc               *flifEncoder
+	enc               *wrapper.CflifEncoder
 	once              sync.Once
 	Interlaced        bool
 	LearnRepeat       int
@@ -28,7 +31,7 @@ type FlifEncoder struct {
 }
 
 func NewFlifEncoder() *FlifEncoder {
-	p := flifCreateEncoder()
+	p := wrapper.CflifCreateEncoder()
 	if p == nil {
 		return nil
 	}
@@ -59,7 +62,7 @@ func (e *FlifEncoder) Destroy() {
 	}
 
 	e.once.Do(func() {
-		flifDestroyEncoder(e.enc)
+		wrapper.CflifDestroyEncoder(e.enc)
 	})
 }
 
@@ -73,38 +76,38 @@ func (e *FlifEncoder) setOptions() {
 		crc = 1
 	}
 
-	flifEncoderSetInterlaced(e.enc, interlaced)
-	flifEncoderSetLearnRepeat(e.enc, e.LearnRepeat)
-	flifEncoderSetAutoColorBuckets(e.enc, e.AutoColorBuckets)
-	flifEncoderSetPaletteSize(e.enc, e.PaletteSize)
-	flifEncoderSetLookback(e.enc, e.Lookback)
-	flifEncoderSetDivisor(e.enc, e.Divisor)
-	flifEncoderSetMinSize(e.enc, e.MinSize)
-	flifEncoderSetSplitThreshold(e.enc, e.SplitThreashold)
+	wrapper.CflifEncoderSetInterlaced(e.enc, interlaced)
+	wrapper.CflifEncoderSetLearnRepeat(e.enc, e.LearnRepeat)
+	wrapper.CflifEncoderSetAutoColorBuckets(e.enc, e.AutoColorBuckets)
+	wrapper.CflifEncoderSetPaletteSize(e.enc, e.PaletteSize)
+	wrapper.CflifEncoderSetLookback(e.enc, e.Lookback)
+	wrapper.CflifEncoderSetDivisor(e.enc, e.Divisor)
+	wrapper.CflifEncoderSetMinSize(e.enc, e.MinSize)
+	wrapper.CflifEncoderSetSplitThreshold(e.enc, e.SplitThreashold)
 	if e.AlphaZeroLossless {
-		flifEncoderSetAlphaZeroLossless(e.enc)
+		wrapper.CflifEncoderSetAlphaZeroLossless(e.enc)
 	}
-	flifEncoderSetChanceCutoff(e.enc, e.ChanceCutoff)
-	flifEncoderSetChanceAlpha(e.enc, e.ChanceAlpha)
-	flifEncoderSetCrcCheck(e.enc, crc)
-	flifEncoderSetChannelCompact(e.enc, e.ChannelCompact)
-	flifEncoderSetYcocg(e.enc, e.YCoCg)
-	flifEncoderSetFrameShape(e.enc, e.FrameShape)
-	flifEncoderSetLossy(e.enc, e.Lossy)
+	wrapper.CflifEncoderSetChanceCutoff(e.enc, e.ChanceCutoff)
+	wrapper.CflifEncoderSetChanceAlpha(e.enc, e.ChanceAlpha)
+	wrapper.CflifEncoderSetCrcCheck(e.enc, crc)
+	wrapper.CflifEncoderSetChannelCompact(e.enc, e.ChannelCompact)
+	wrapper.CflifEncoderSetYcocg(e.enc, e.YCoCg)
+	wrapper.CflifEncoderSetFrameShape(e.enc, e.FrameShape)
+	wrapper.CflifEncoderSetLossy(e.enc, e.Lossy)
 }
 
 func (e *FlifEncoder) AddImage(image *FlifImage) {
 	for _, img := range image.images {
-		flifEncoderAddImage(e.enc, img)
+		wrapper.CflifEncoderAddImage(e.enc, img)
 	}
 }
 
 func (e *FlifEncoder) EncodeFile(name string) int {
 	e.setOptions()
-	return flifEncoderEncodeFile(e.enc, name)
+	return wrapper.CflifEncoderEncodeFile(e.enc, name)
 }
 
 func (e *FlifEncoder) EncodeMemory(data *[]byte) int {
 	e.setOptions()
-	return flifEncoderEncodeMemory(e.enc, data)
+	return wrapper.CflifEncoderEncodeMemory(e.enc, data)
 }

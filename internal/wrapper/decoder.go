@@ -11,112 +11,112 @@ package wrapper
 import "C"
 import "unsafe"
 
-type flifDecoder struct {
+type CflifDecoder struct {
 	dec *C.FLIF_DECODER
 }
 
-type flifInfo struct {
+type CflifInfo struct {
 	info *C.FLIF_INFO
 }
 
-var flifCreateDecoder = func() *flifDecoder {
+func CflifCreateDecoder() *CflifDecoder {
 	p := C.flif_create_decoder()
 	if p == nil {
 		return nil
 	}
-	return &flifDecoder{p}
+	return &CflifDecoder{p}
 }
 
-var flifDecoderDecodeFile = func(decoder *flifDecoder, filename string) int {
+func CflifDecoderDecodeFile(decoder *CflifDecoder, filename string) int {
 	cname := C.CString(filename)
 	defer C.free(unsafe.Pointer(cname))
 	return int(C.flif_decoder_decode_file(decoder.dec, cname))
 }
 
-var flifDecoderDecodeMemory = func(decoder *flifDecoder, data []byte) int {
+func CflifDecoderDecodeMemory(decoder *CflifDecoder, data []byte) int {
 	return int(C.flif_decoder_decode_memory(decoder.dec, unsafe.Pointer(&data[0]), C.size_t(len(data))))
 }
 
-var flifDecoderNumImages = func(decoder *flifDecoder) int {
+func CflifDecoderNumImages(decoder *CflifDecoder) int {
 	return int(C.flif_decoder_num_images(decoder.dec))
 }
 
-var flifDecoderGetNumLoops = func(decoder *flifDecoder) int {
+func CflifDecoderGetNumLoops(decoder *CflifDecoder) int {
 	return int(C.flif_decoder_num_loops(decoder.dec))
 }
 
-var flifDecoderGetImage = func(decoder *flifDecoder, index int) *flifImage {
+func CflifDecoderGetImage(decoder *CflifDecoder, index int) *CflifImage {
 	p := C.flif_decoder_get_image(decoder.dec, C.size_t(index))
 	if p == nil {
 		return nil
 	}
-	return &flifImage{p}
+	return &CflifImage{p}
 }
 
-var flifDestroyDecoder = func(decoder *flifDecoder) {
+func CflifDestroyDecoder(decoder *CflifDecoder) {
 	C.flif_destroy_decoder(decoder.dec)
 }
 
-var flifAbortDecoder = func(decoder *flifDecoder) int {
+func CflifAbortDecoder(decoder *CflifDecoder) int {
 	return int(C.flif_abort_decoder(decoder.dec))
 }
 
-var flifDecoderSetCrcCheck = func(decoder *flifDecoder, crcCheck int) {
+func CflifDecoderSetCrcCheck(decoder *CflifDecoder, crcCheck int) {
 	C.flif_decoder_set_crc_check(decoder.dec, C.int32_t(crcCheck))
 }
 
-var flifDecoderSetQuality = func(decoder *flifDecoder, quality int) {
+func CflifDecoderSetQuality(decoder *CflifDecoder, quality int) {
 	C.flif_decoder_set_quality(decoder.dec, C.int32_t(quality))
 }
 
-var flifDecoderSetScale = func(decoder *flifDecoder, scale int) {
+func CflifDecoderSetScale(decoder *CflifDecoder, scale int) {
 	C.flif_decoder_set_scale(decoder.dec, C.uint32_t(scale))
 }
 
-var flifDecoderSetResize = func(decoder *flifDecoder, width, height int) {
+func CflifDecoderSetResize(decoder *CflifDecoder, width, height int) {
 	C.flif_decoder_set_resize(decoder.dec, C.uint32_t(width), C.uint32_t(height))
 }
 
-var flifDecoderSetFit = func(decoder *flifDecoder, width, height int) {
+func CflifDecoderSetFit(decoder *CflifDecoder, width, height int) {
 	C.flif_decoder_set_fit(decoder.dec, C.uint32_t(width), C.uint32_t(height))
 }
 
-var flifDecoderSetCallback = func() {
+func CflifDecoderSetCallback() {
 	//C.flif_decoder_set_callback(FLIF_DECODER* decoder, uint32_t (*callback)(int32_t quality, int64_t bytes_read))
 }
 
-var flifDecoderSetFirstCallbackQuality = func() {
+func CflifDecoderSetFirstCallbackQuality() {
 	//C.flif_decoder_set_first_callback_quality(FLIF_DECODER* decoder, int32_t quality) // valid quality: 0-10000
 }
 
-var flifReadInfoFromMemory = func(data []byte) *flifInfo {
+func CflifReadInfoFromMemory(data []byte) *CflifInfo {
 	p := C.flif_read_info_from_memory(unsafe.Pointer(&data[0]), C.size_t(len(data)))
 	if p == nil {
 		return nil
 	}
-	return &flifInfo{p}
+	return &CflifInfo{p}
 }
 
-var flifDestroyInfo = func(info *flifInfo) {
+func CflifDestroyInfo(info *CflifInfo) {
 	C.flif_destroy_info(info.info)
 }
 
-var flifInfoGetWidth = func(info *flifInfo) int {
+func CflifInfoGetWidth(info *CflifInfo) int {
 	return int(C.flif_info_get_width(info.info))
 }
 
-var flifInfoGetHeight = func(info *flifInfo) int {
+func CflifInfoGetHeight(info *CflifInfo) int {
 	return int(C.flif_info_get_height(info.info))
 }
 
-var flifInfoGetNbChannels = func(info *flifInfo) int {
+func CflifInfoGetNbChannels(info *CflifInfo) int {
 	return int(C.flif_info_get_nb_channels(info.info))
 }
 
-var flifInfoGetDepth = func(info *flifInfo) int {
+func CflifInfoGetDepth(info *CflifInfo) int {
 	return int(C.flif_info_get_depth(info.info))
 }
 
-var flifInfoNumImages = func(info *flifInfo) int {
+func CflifInfoNumImages(info *CflifInfo) int {
 	return int(C.flif_info_num_images(info.info))
 }

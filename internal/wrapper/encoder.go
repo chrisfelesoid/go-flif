@@ -11,29 +11,29 @@ package wrapper
 import "C"
 import "unsafe"
 
-type flifEncoder struct {
+type CflifEncoder struct {
 	enc *C.FLIF_ENCODER
 }
 
-var flifCreateEncoder = func() *flifEncoder {
+func CflifCreateEncoder() *CflifEncoder {
 	p := C.flif_create_encoder()
 	if p == nil {
 		return nil
 	}
-	return &flifEncoder{p}
+	return &CflifEncoder{p}
 }
 
-var flifEncoderAddImage = func(encoder *flifEncoder, image *flifImage) {
+func CflifEncoderAddImage(encoder *CflifEncoder, image *CflifImage) {
 	C.flif_encoder_add_image(encoder.enc, image.img)
 }
 
-var flifEncoderEncodeFile = func(encoder *flifEncoder, filename string) int {
+func CflifEncoderEncodeFile(encoder *CflifEncoder, filename string) int {
 	cname := C.CString(filename)
 	defer C.free(unsafe.Pointer(cname))
 	return int(C.flif_encoder_encode_file(encoder.enc, cname))
 }
 
-var flifEncoderEncodeMemory = func(encoder *flifEncoder, data *[]byte) int {
+func CflifEncoderEncodeMemory(encoder *CflifEncoder, data *[]byte) int {
 	*data = nil
 	var p unsafe.Pointer
 	var num C.size_t
@@ -42,76 +42,76 @@ var flifEncoderEncodeMemory = func(encoder *flifEncoder, data *[]byte) int {
 	if stat == 0 {
 		return stat
 	}
-	defer flifFreeMemory(p)
+	defer CflifFreeMemory(p)
 
 	*data = C.GoBytes(p, C.int(num))
 	return stat
 }
 
-var flifDestroyEncoder = func(encoder *flifEncoder) {
+func CflifDestroyEncoder(encoder *CflifEncoder) {
 	C.flif_destroy_encoder(encoder.enc)
 }
 
-var flifEncoderSetInterlaced = func(encoder *flifEncoder, interlaced int) {
+func CflifEncoderSetInterlaced(encoder *CflifEncoder, interlaced int) {
 	C.flif_encoder_set_interlaced(encoder.enc, C.uint32_t(interlaced))
 }
 
-var flifEncoderSetLearnRepeat = func(encoder *flifEncoder, learnRepeat int) {
+func CflifEncoderSetLearnRepeat(encoder *CflifEncoder, learnRepeat int) {
 	C.flif_encoder_set_learn_repeat(encoder.enc, C.uint32_t(learnRepeat))
 }
 
-var flifEncoderSetAutoColorBuckets = func(encoder *flifEncoder, autoColorBuckets int) {
+func CflifEncoderSetAutoColorBuckets(encoder *CflifEncoder, autoColorBuckets int) {
 	C.flif_encoder_set_auto_color_buckets(encoder.enc, C.uint32_t(autoColorBuckets))
 }
 
-var flifEncoderSetPaletteSize = func(encoder *flifEncoder, paletteSize int) {
+func CflifEncoderSetPaletteSize(encoder *CflifEncoder, paletteSize int) {
 	C.flif_encoder_set_palette_size(encoder.enc, C.int32_t(paletteSize))
 }
 
-var flifEncoderSetLookback = func(encoder *flifEncoder, lookback int) {
+func CflifEncoderSetLookback(encoder *CflifEncoder, lookback int) {
 	C.flif_encoder_set_lookback(encoder.enc, C.int32_t(lookback))
 }
 
-var flifEncoderSetDivisor = func(encoder *flifEncoder, divisor int) {
+func CflifEncoderSetDivisor(encoder *CflifEncoder, divisor int) {
 	C.flif_encoder_set_divisor(encoder.enc, C.int32_t(divisor))
 }
 
-var flifEncoderSetMinSize = func(encoder *flifEncoder, minSize int) {
+func CflifEncoderSetMinSize(encoder *CflifEncoder, minSize int) {
 	C.flif_encoder_set_min_size(encoder.enc, C.int32_t(minSize))
 }
 
-var flifEncoderSetSplitThreshold = func(encoder *flifEncoder, splitThreshold int) {
+func CflifEncoderSetSplitThreshold(encoder *CflifEncoder, splitThreshold int) {
 	C.flif_encoder_set_split_threshold(encoder.enc, C.int32_t(splitThreshold))
 }
 
-var flifEncoderSetAlphaZeroLossless = func(encoder *flifEncoder) {
+func CflifEncoderSetAlphaZeroLossless(encoder *CflifEncoder) {
 	C.flif_encoder_set_alpha_zero_lossless(encoder.enc)
 }
 
-var flifEncoderSetChanceCutoff = func(encoder *flifEncoder, chanceCutoff int) {
+func CflifEncoderSetChanceCutoff(encoder *CflifEncoder, chanceCutoff int) {
 	C.flif_encoder_set_chance_cutoff(encoder.enc, C.int32_t(chanceCutoff))
 }
 
-var flifEncoderSetChanceAlpha = func(encoder *flifEncoder, chanceAlpha int) {
+func CflifEncoderSetChanceAlpha(encoder *CflifEncoder, chanceAlpha int) {
 	C.flif_encoder_set_chance_alpha(encoder.enc, C.int32_t(chanceAlpha))
 }
 
-var flifEncoderSetCrcCheck = func(encoder *flifEncoder, crcCheck int) {
-	C.flif_encoder_set_crc_check(encoder.enc, C.uint32_t(crcCheck))
+func CflifEncoderSetCrcCheck(encoder *CflifEncoder, crCheck int) {
+	C.flif_encoder_set_crc_check(encoder.enc, C.uint32_t(crCheck))
 }
 
-var flifEncoderSetChannelCompact = func(encoder *flifEncoder, channelCompact int) {
+func CflifEncoderSetChannelCompact(encoder *CflifEncoder, channelCompact int) {
 	C.flif_encoder_set_channel_compact(encoder.enc, C.uint32_t(channelCompact))
 }
 
-var flifEncoderSetYcocg = func(encoder *flifEncoder, ycocg int) {
+func CflifEncoderSetYcocg(encoder *CflifEncoder, ycocg int) {
 	C.flif_encoder_set_ycocg(encoder.enc, C.uint32_t(ycocg))
 }
 
-var flifEncoderSetFrameShape = func(encoder *flifEncoder, frameShape int) {
+func CflifEncoderSetFrameShape(encoder *CflifEncoder, frameShape int) {
 	C.flif_encoder_set_frame_shape(encoder.enc, C.uint32_t(frameShape))
 }
 
-var flifEncoderSetLossy = func(encoder *flifEncoder, lossy int) {
+func CflifEncoderSetLossy(encoder *CflifEncoder, lossy int) {
 	C.flif_encoder_set_lossy(encoder.enc, C.int32_t(lossy))
 }

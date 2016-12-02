@@ -4,64 +4,67 @@
 
 package wrapper
 
-import "sync"
+import (
+	"sync"
+	"github.com/chrisfelesoid/go-flif/internal/wrapper"
+)
 
 // FlifImage FLIF_IMAGE
 type FlifImage struct {
-	images []*flifImage
+	images []*wrapper.CflifImage
 	once   sync.Once
 }
 
 func NewFlifImage(width, height int) *FlifImage {
-	img := flifCreateImage(width, height)
+	img := wrapper.CflifCreateImage(width, height)
 	if img == nil {
 		return nil
 	}
 	return &FlifImage{
-		images: []*flifImage{img},
+		images: []*wrapper.CflifImage{img},
 	}
 }
 
 func NewFlifImageHDR(width, height int) *FlifImage {
-	img := flifCreateImageHDR(width, height)
+	img := wrapper.CflifCreateImageHDR(width, height)
 	if img == nil {
 		return nil
 	}
 	return &FlifImage{
-		images: []*flifImage{img},
+		images: []*wrapper.CflifImage{img},
 	}
 }
 
 func NewFlifImageFromRGBA(width, height int, data []byte) *FlifImage {
 	stride := width * 4 // R,G,B,A = 4
-	img := flifImportImageRGBA(width, height, data, stride)
+	img := wrapper.CflifImportImageRGBA(width, height, data, stride)
 	if img == nil {
 		return nil
 	}
 	return &FlifImage{
-		images: []*flifImage{img},
+		images: []*wrapper.CflifImage{img},
 	}
 }
 
 func NewFlifImageFromRGB(width, height int, data []byte) *FlifImage {
 	stride := width * 3 // R,G,B = 3
-	img := flifImportImageRGB(width, height, data, stride)
+	img := wrapper.CflifImportImageRGB(width, height, data, stride)
 	if img == nil {
 		return nil
 	}
 	return &FlifImage{
-		images: []*flifImage{img},
+		images: []*wrapper.CflifImage{img},
 	}
 }
 
 func NewFlifImageFromGray(width, height int, data []byte) *FlifImage {
 	stride := width * 1 // GrayScale = 1
-	img := flifImportImageGRAY(width, height, data, stride)
+	img := wrapper.CflifImportImageGRAY(width, height, data, stride)
 	if img == nil {
 		return nil
 	}
 	return &FlifImage{
-		images: []*flifImage{img},
+		images: []*wrapper.CflifImage{img},
 	}
 }
 
@@ -72,43 +75,47 @@ func (f *FlifImage) Destroy() {
 
 	f.once.Do(func() {
 		for _, img := range f.images {
-			flifDestroyImage(img)
+			wrapper.CflifDestroyImage(img)
 		}
 		f.images = nil
 	})
 }
 
+func (f *FlifImage) GetImageCount() int {
+	return len(f.images)
+}
+
 func (f *FlifImage) GetWidth() int {
-	return flifImageGetWidth(f.images[0])
+	return wrapper.CflifImageGetWidth(f.images[0])
 }
 
 func (f *FlifImage) GetHeight() int {
-	return flifImageGetHeight(f.images[0])
+	return wrapper.CflifImageGetHeight(f.images[0])
 }
 
 func (f *FlifImage) GetChannel() int {
-	return flifImageGetNbChannels(f.images[0])
+	return wrapper.CflifImageGetNbChannels(f.images[0])
 }
 
 func (f *FlifImage) GetDepth() int {
-	return flifImageGetDepth(f.images[0])
+	return wrapper.CflifImageGetDepth(f.images[0])
 }
 
 func (f *FlifImage) GetFrameDelay() int {
-	return flifImageGetFrameDelay(f.images[0])
+	return wrapper.CflifImageGetFrameDelay(f.images[0])
 }
 
 func (f *FlifImage) SetFrameDelay(delay int) {
-	flifImageSetFrameDelay(f.images[0], delay)
+	wrapper.CflifImageSetFrameDelay(f.images[0], delay)
 }
 
 func (f *FlifImage) SetMetadata(name string, data []byte) {
-	flifImageSetMetadata(f.images[0], name, data)
+	wrapper.CflifImageSetMetadata(f.images[0], name, data)
 }
 
 func (f *FlifImage) GetMetadata(name string) []byte {
 	var data []byte
-	flifImageGetMetadata(f.images[0], name, &data)
+	wrapper.CflifImageGetMetadata(f.images[0], name, &data)
 	return data
 }
 
@@ -116,26 +123,26 @@ func (f *FlifImage) WriteRowRGBA8(row int, data []byte, index int) {
 	if row >= f.GetHeight() {
 		return
 	}
-	flifImageWriteRowRGBA8(f.images[index], row, data)
+	wrapper.CflifImageWriteRowRGBA8(f.images[index], row, data)
 }
 
 func (f *FlifImage) ReadRowRGBA8(row, index int) []byte {
 	if row >= f.GetHeight() {
 		return nil
 	}
-	return flifImageReadRowRGBA8(f.images[index], row)
+	return wrapper.CflifImageReadRowRGBA8(f.images[index], row)
 }
 
 func (f *FlifImage) WriteRowRGBA16(row int, data []byte, index int) {
 	if row >= f.GetHeight() {
 		return
 	}
-	flifImageWriteRowRGBA16(f.images[index], row, data)
+	wrapper.CflifImageWriteRowRGBA16(f.images[index], row, data)
 }
 
 func (f *FlifImage) ReadRowRGBA16(row, index int) []byte {
 	if row >= f.GetHeight() {
 		return nil
 	}
-	return flifImageReadRowRGBA16(f.images[index], row)
+	return wrapper.CflifImageReadRowRGBA16(f.images[index], row)
 }
