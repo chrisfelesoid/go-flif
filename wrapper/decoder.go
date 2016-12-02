@@ -61,8 +61,8 @@ func (d *FlifDecoder) Destroy() {
 }
 
 // Abort flif_abort_decoder
-func (d *FlifDecoder) Abort() int {
-	return wrapper.CflifAbortDecoder(d.dec)
+func (d *FlifDecoder) Abort() error {
+	return checkResult(wrapper.CflifAbortDecoder(d.dec))
 }
 
 func (d *FlifDecoder) setOptions() {
@@ -81,15 +81,15 @@ func (d *FlifDecoder) setOptions() {
 }
 
 // DecodeFile flif_decoder_decode_file
-func (d *FlifDecoder) DecodeFile(name string) int {
+func (d *FlifDecoder) DecodeFile(name string) error {
 	d.setOptions()
-	return wrapper.CflifDecoderDecodeFile(d.dec, name)
+	return checkResult(wrapper.CflifDecoderDecodeFile(d.dec, name))
 }
 
 // DecodeMemory flif_decoder_decode_memory
-func (d *FlifDecoder) DecodeMemory(data []byte) int {
+func (d *FlifDecoder) DecodeMemory(data []byte) error {
 	d.setOptions()
-	return wrapper.CflifDecoderDecodeMemory(d.dec, data)
+	return checkResult(wrapper.CflifDecoderDecodeMemory(d.dec, data))
 }
 
 // GetImageCount flif_decoder_num_images

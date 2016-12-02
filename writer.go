@@ -7,7 +7,6 @@ package flif
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"image"
 	"image/color"
 	"io"
@@ -62,7 +61,6 @@ func Encode(w io.Writer, m image.Image) error {
 	case 8:
 		img = wrapper.NewFlifImageFromRGBA(b.Dx(), b.Dy(), buf.Bytes())
 	default:
-		fmt.Println("hoge")
 		img = wrapper.NewFlifImageHDR(b.Dx(), b.Dy())
 		px := buf.Bytes()
 		col := b.Dx() * 8
