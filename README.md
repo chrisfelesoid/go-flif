@@ -1,6 +1,6 @@
 # Go FLIF
 
-Free Lossless Image Format([FLIF](flif.info)) binding in Go.
+Free Lossless Image Format([FLIF](http://flif.info/)) binding in Go.
 
 
 # License
