@@ -31,9 +31,11 @@ type FlifInfo struct {
 	ImageCount int
 }
 
+var decoder wrapper.CdecoderFunctionWrapper
+
 // NewFlifDecoder flif_create_decoder
 func NewFlifDecoder() *FlifDecoder {
-	p := wrapper.CflifCreateDecoder()
+	p := decoder.FlifCreateDecoder()
 	if p == nil {
 		return nil
 	}
@@ -55,51 +57,36 @@ func (d *FlifDecoder) Destroy() {
 	}
 
 	d.once.Do(func() {
-		wrapper.CflifDestroyDecoder(d.dec)
+		decoder.FlifDestroyDecoder(d.dec)
 		d.dec = nil
 	})
 }
 
 // Abort flif_abort_decoder
 func (d *FlifDecoder) Abort() error {
-	return checkResult(wrapper.CflifAbortDecoder(d.dec))
-}
-
-func (d *FlifDecoder) setOptions() {
-	crc := 0
-	if d.CrcCheck {
-		crc = 1
-	}
-	wrapper.CflifDecoderSetCrcCheck(d.dec, crc)
-	wrapper.CflifDecoderSetQuality(d.dec, d.Quality)
-	wrapper.CflifDecoderSetScale(d.dec, d.Scale)
-	if !d.Fit {
-		wrapper.CflifDecoderSetResize(d.dec, d.Width, d.Height)
-	} else {
-		wrapper.CflifDecoderSetFit(d.dec, d.Width, d.Height)
-	}
+	return checkResult(decoder.FlifAbortDecoder(d.dec))
 }
 
 // DecodeFile flif_decoder_decode_file
 func (d *FlifDecoder) DecodeFile(name string) error {
-	d.setOptions()
-	return checkResult(wrapper.CflifDecoderDecodeFile(d.dec, name))
+	setDecoderOptions(d)
+	return checkResult(decoder.FlifDecoderDecodeFile(d.dec, name))
 }
 
 // DecodeMemory flif_decoder_decode_memory
 func (d *FlifDecoder) DecodeMemory(data []byte) error {
-	d.setOptions()
-	return checkResult(wrapper.CflifDecoderDecodeMemory(d.dec, data))
+	setDecoderOptions(d)
+	return checkResult(decoder.FlifDecoderDecodeMemory(d.dec, data))
 }
 
 // GetImageCount flif_decoder_num_images
 func (d *FlifDecoder) GetImageCount() int {
-	return wrapper.CflifDecoderNumImages(d.dec)
+	return decoder.FlifDecoderNumImages(d.dec)
 }
 
 // GetLoopCount flif_decoder_num_loops
 func (d *FlifDecoder) GetLoopCount() int {
-	return wrapper.CflifDecoderGetNumLoops(d.dec)
+	return decoder.FlifDecoderGetNumLoops(d.dec)
 }
 
 // GetImage flif_decoder_get_image
@@ -112,7 +99,7 @@ func (d *FlifDecoder) GetImage() *FlifImage {
 	}
 
 	for i := 0; i < num; i++ {
-		p := wrapper.CflifDecoderGetImage(d.dec, i)
+		p := decoder.FlifDecoderGetImage(d.dec, i)
 		fi.images[i] = p
 	}
 
@@ -121,17 +108,36 @@ func (d *FlifDecoder) GetImage() *FlifImage {
 
 // GetInfo flif_info_xxx
 func GetInfo(data []byte) *FlifInfo {
-	info := wrapper.CflifReadInfoFromMemory(data)
+	info := decoder.FlifReadInfoFromMemory(data)
 	if info == nil {
 		return nil
 	}
-	defer wrapper.CflifDestroyInfo(info)
+	defer decoder.FlifDestroyInfo(info)
 
 	return &FlifInfo{
-		Width:      wrapper.CflifInfoGetWidth(info),
-		Height:     wrapper.CflifInfoGetHeight(info),
-		Channel:    wrapper.CflifInfoGetNbChannels(info),
-		Depth:      wrapper.CflifInfoGetDepth(info),
-		ImageCount: wrapper.CflifInfoNumImages(info),
+		Width:      decoder.FlifInfoGetWidth(info),
+		Height:     decoder.FlifInfoGetHeight(info),
+		Channel:    decoder.FlifInfoGetNbChannels(info),
+		Depth:      decoder.FlifInfoGetDepth(info),
+		ImageCount: decoder.FlifInfoNumImages(info),
 	}
+}
+
+var setDecoderOptions = func(d *FlifDecoder) {
+	crc := 0
+	if d.CrcCheck {
+		crc = 1
+	}
+	decoder.FlifDecoderSetCrcCheck(d.dec, crc)
+	decoder.FlifDecoderSetQuality(d.dec, d.Quality)
+	decoder.FlifDecoderSetScale(d.dec, d.Scale)
+	if !d.Fit {
+		decoder.FlifDecoderSetResize(d.dec, d.Width, d.Height)
+	} else {
+		decoder.FlifDecoderSetFit(d.dec, d.Width, d.Height)
+	}
+}
+
+func init() {
+	decoder = &wrapper.CdecoderWrapper{}
 }

@@ -21,8 +21,10 @@ var (
 	ErrOutOfRange = errors.New("index out of range")
 )
 
+var common wrapper.CcommonFunctionWrapper
+
 func NewFlifImage(width, height int) *FlifImage {
-	img := wrapper.CflifCreateImage(width, height)
+	img := common.FlifCreateImage(width, height)
 	if img == nil {
 		return nil
 	}
@@ -32,7 +34,7 @@ func NewFlifImage(width, height int) *FlifImage {
 }
 
 func NewFlifImageHDR(width, height int) *FlifImage {
-	img := wrapper.CflifCreateImageHDR(width, height)
+	img := common.FlifCreateImageHDR(width, height)
 	if img == nil {
 		return nil
 	}
@@ -43,7 +45,7 @@ func NewFlifImageHDR(width, height int) *FlifImage {
 
 func NewFlifImageFromRGBA(width, height int, data []byte) *FlifImage {
 	stride := width * 4 // R,G,B,A = 4
-	img := wrapper.CflifImportImageRGBA(width, height, data, stride)
+	img := common.FlifImportImageRGBA(width, height, data, stride)
 	if img == nil {
 		return nil
 	}
@@ -54,7 +56,7 @@ func NewFlifImageFromRGBA(width, height int, data []byte) *FlifImage {
 
 func NewFlifImageFromRGB(width, height int, data []byte) *FlifImage {
 	stride := width * 3 // R,G,B = 3
-	img := wrapper.CflifImportImageRGB(width, height, data, stride)
+	img := common.FlifImportImageRGB(width, height, data, stride)
 	if img == nil {
 		return nil
 	}
@@ -65,7 +67,7 @@ func NewFlifImageFromRGB(width, height int, data []byte) *FlifImage {
 
 func NewFlifImageFromGray(width, height int, data []byte) *FlifImage {
 	stride := width * 1 // GrayScale = 1
-	img := wrapper.CflifImportImageGRAY(width, height, data, stride)
+	img := common.FlifImportImageGRAY(width, height, data, stride)
 	if img == nil {
 		return nil
 	}
@@ -81,7 +83,7 @@ func (f *FlifImage) Destroy() {
 
 	f.once.Do(func() {
 		for _, img := range f.images {
-			wrapper.CflifDestroyImage(img)
+			common.FlifDestroyImage(img)
 		}
 		f.images = nil
 	})
@@ -92,71 +94,125 @@ func (f *FlifImage) GetImageCount() int {
 }
 
 func (f *FlifImage) GetWidth() int {
-	return wrapper.CflifImageGetWidth(f.images[0])
+	if f.images == nil {
+		return 0
+	}
+	return common.FlifImageGetWidth(f.images[0])
 }
 
 func (f *FlifImage) GetHeight() int {
-	return wrapper.CflifImageGetHeight(f.images[0])
+	if f.images == nil {
+		return 0
+	}
+	return common.FlifImageGetHeight(f.images[0])
 }
 
 func (f *FlifImage) GetChannel() int {
-	return wrapper.CflifImageGetNbChannels(f.images[0])
+	if f.images == nil {
+		return 0
+	}
+	return common.FlifImageGetNbChannels(f.images[0])
 }
 
 func (f *FlifImage) GetDepth() int {
-	return wrapper.CflifImageGetDepth(f.images[0])
+	if f.images == nil {
+		return 0
+	}
+	return common.FlifImageGetDepth(f.images[0])
 }
 
 func (f *FlifImage) GetFrameDelay() int {
-	return wrapper.CflifImageGetFrameDelay(f.images[0])
+	if f.images == nil {
+		return 0
+	}
+	return common.FlifImageGetFrameDelay(f.images[0])
 }
 
 func (f *FlifImage) SetFrameDelay(delay int) {
-	wrapper.CflifImageSetFrameDelay(f.images[0], delay)
+	if f.images == nil {
+		return
+	}
+	common.FlifImageSetFrameDelay(f.images[0], delay)
 }
 
 func (f *FlifImage) SetMetadata(name string, data []byte) {
-	wrapper.CflifImageSetMetadata(f.images[0], name, data)
+	if f.images == nil {
+		return
+	}
+	common.FlifImageSetMetadata(f.images[0], name, data)
 }
 
 func (f *FlifImage) GetMetadata(name string) []byte {
+	if f.images == nil {
+		return nil
+	}
 	var data []byte
-	wrapper.CflifImageGetMetadata(f.images[0], name, &data)
+	common.FlifImageGetMetadata(f.images[0], name, &data)
 	return data
 }
 
 func (f *FlifImage) WriteRowRGBA8(row int, data []byte, index int) error {
-	if row >= f.GetHeight() {
+	w := f.GetWidth()
+	h := f.GetHeight()
+	if h == 0 || row >= h || row < 0 {
 		return ErrOutOfRange
 	}
-	if len(data) < f.GetWidth()*4 {
+	if w == 0 || len(data) < w*4 {
 		return ErrOutOfRange
 	}
-	wrapper.CflifImageWriteRowRGBA8(f.images[index], row, data)
+	if index < 0 || len(f.images) <= index {
+		return ErrOutOfRange
+	}
+	common.FlifImageWriteRowRGBA8(f.images[index], row, data)
 	return nil
 }
 
-func (f *FlifImage) ReadRowRGBA8(row, index int) []byte {
-	if row >= f.GetHeight() {
-		return nil
+func (f *FlifImage) ReadRowRGBA8(row, index int) ([]byte, error) {
+	h := f.GetHeight()
+	if h == 0 || row >= h || row < 0 {
+		return nil, ErrOutOfRange
 	}
-	return wrapper.CflifImageReadRowRGBA8(f.images[index], row)
+	if index < 0 || len(f.images) <= index {
+		return nil, ErrOutOfRange
+	}
+	data := common.FlifImageReadRowRGBA8(f.images[index], row)
+	if data == nil {
+		return nil, ErrUnknown
+	}
+	return data, nil
 }
 
 func (f *FlifImage) WriteRowRGBA16(row int, data []byte, index int) error {
-	if row >= f.GetHeight() {
+	w := f.GetWidth()
+	h := f.GetHeight()
+	if h == 0 || row >= h {
 		return ErrOutOfRange
 	}
-	if len(data) < f.GetWidth()*4*2 {
+	if w == 0 || len(data) < w*4*2 {
 		return ErrOutOfRange
 	}
-	wrapper.CflifImageWriteRowRGBA16(f.images[index], row, data)
+	if index < 0 || len(f.images) <= index {
+		return ErrOutOfRange
+	}
+	common.FlifImageWriteRowRGBA16(f.images[index], row, data)
 	return nil
 }
 
-func (f *FlifImage) ReadRowRGBA16(row, index int) []byte {
-	if row >= f.GetHeight() {
-		return nil
+func (f *FlifImage) ReadRowRGBA16(row, index int) ([]byte, error) {
+	h := f.GetHeight()
+	if h == 0 || row >= h || row < 0 {
+		return nil, ErrOutOfRange
 	}
-	return wrapper.CflifImageReadRowRGBA16(f.images[index], row)
+	if index < 0 || len(f.images) <= index {
+		return nil, ErrOutOfRange
+	}
+	data := common.FlifImageReadRowRGBA16(f.images[index], row)
+	if data == nil {
+		return nil, ErrUnknown
+	}
+	return data, nil
+}
+
+func init() {
+	common = &wrapper.CcommonWrapper{}
 }

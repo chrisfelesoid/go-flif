@@ -26,7 +26,10 @@ func copyRow(fi *wrapper.FlifImage, img image.Image) error {
 	h := fi.GetHeight()
 	w := fi.GetWidth()
 	for y := 0; y < h; y++ {
-		buf := readRow(fi, y)
+		buf, err := readRow(fi, y)
+		if err != nil {
+			return errors.New("fail copy pixels")
+		}
 		for x := 0; x < w; x++ {
 			switch chkimg := img.(type) {
 			case *image.RGBA:
@@ -49,7 +52,7 @@ func copyRow(fi *wrapper.FlifImage, img image.Image) error {
 	return nil
 }
 
-func readRow(fi *wrapper.FlifImage, row int) []byte {
+func readRow(fi *wrapper.FlifImage, row int) ([]byte, error) {
 	if fi.GetDepth() <= 8 {
 		return fi.ReadRowRGBA8(row, 0)
 	}

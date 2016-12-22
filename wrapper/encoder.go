@@ -31,8 +31,10 @@ type FlifEncoder struct {
 	Lossy             int
 }
 
+var encoder wrapper.CencoderFunctionWrapper
+
 func NewFlifEncoder() *FlifEncoder {
-	p := wrapper.CflifCreateEncoder()
+	p := encoder.FlifCreateEncoder()
 	if p == nil {
 		return nil
 	}
@@ -63,11 +65,37 @@ func (e *FlifEncoder) Destroy() {
 	}
 
 	e.once.Do(func() {
-		wrapper.CflifDestroyEncoder(e.enc)
+		encoder.FlifDestroyEncoder(e.enc)
+		e.enc = nil
 	})
 }
 
-func (e *FlifEncoder) setOptions() {
+func (e *FlifEncoder) AddImage(image *FlifImage) {
+	if image == nil {
+		return
+	}
+	for _, img := range image.images {
+		encoder.FlifEncoderAddImage(e.enc, img)
+	}
+}
+
+func (e *FlifEncoder) EncodeFile(name string) error {
+	setEncoderOptions(e)
+	return checkResult(encoder.FlifEncoderEncodeFile(e.enc, name))
+}
+
+func (e *FlifEncoder) Encode() ([]byte, error) {
+	var data []byte
+	setEncoderOptions(e)
+
+	err := checkResult(encoder.FlifEncoderEncodeMemory(e.enc, &data))
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+var setEncoderOptions = func(e *FlifEncoder) {
 	interlaced := 0
 	crc := 0
 	if e.Interlaced {
@@ -77,44 +105,26 @@ func (e *FlifEncoder) setOptions() {
 		crc = 1
 	}
 
-	wrapper.CflifEncoderSetInterlaced(e.enc, interlaced)
-	wrapper.CflifEncoderSetLearnRepeat(e.enc, e.LearnRepeat)
-	wrapper.CflifEncoderSetAutoColorBuckets(e.enc, e.AutoColorBuckets)
-	wrapper.CflifEncoderSetPaletteSize(e.enc, e.PaletteSize)
-	wrapper.CflifEncoderSetLookback(e.enc, e.Lookback)
-	wrapper.CflifEncoderSetDivisor(e.enc, e.Divisor)
-	wrapper.CflifEncoderSetMinSize(e.enc, e.MinSize)
-	wrapper.CflifEncoderSetSplitThreshold(e.enc, e.SplitThreashold)
+	encoder.FlifEncoderSetInterlaced(e.enc, interlaced)
+	encoder.FlifEncoderSetLearnRepeat(e.enc, e.LearnRepeat)
+	encoder.FlifEncoderSetAutoColorBuckets(e.enc, e.AutoColorBuckets)
+	encoder.FlifEncoderSetPaletteSize(e.enc, e.PaletteSize)
+	encoder.FlifEncoderSetLookback(e.enc, e.Lookback)
+	encoder.FlifEncoderSetDivisor(e.enc, e.Divisor)
+	encoder.FlifEncoderSetMinSize(e.enc, e.MinSize)
+	encoder.FlifEncoderSetSplitThreshold(e.enc, e.SplitThreashold)
 	if e.AlphaZeroLossless {
-		wrapper.CflifEncoderSetAlphaZeroLossless(e.enc)
+		encoder.FlifEncoderSetAlphaZeroLossless(e.enc)
 	}
-	wrapper.CflifEncoderSetChanceCutoff(e.enc, e.ChanceCutoff)
-	wrapper.CflifEncoderSetChanceAlpha(e.enc, e.ChanceAlpha)
-	wrapper.CflifEncoderSetCrcCheck(e.enc, crc)
-	wrapper.CflifEncoderSetChannelCompact(e.enc, e.ChannelCompact)
-	wrapper.CflifEncoderSetYcocg(e.enc, e.YCoCg)
-	wrapper.CflifEncoderSetFrameShape(e.enc, e.FrameShape)
-	wrapper.CflifEncoderSetLossy(e.enc, e.Lossy)
+	encoder.FlifEncoderSetChanceCutoff(e.enc, e.ChanceCutoff)
+	encoder.FlifEncoderSetChanceAlpha(e.enc, e.ChanceAlpha)
+	encoder.FlifEncoderSetCrcCheck(e.enc, crc)
+	encoder.FlifEncoderSetChannelCompact(e.enc, e.ChannelCompact)
+	encoder.FlifEncoderSetYcocg(e.enc, e.YCoCg)
+	encoder.FlifEncoderSetFrameShape(e.enc, e.FrameShape)
+	encoder.FlifEncoderSetLossy(e.enc, e.Lossy)
 }
 
-func (e *FlifEncoder) AddImage(image *FlifImage) {
-	for _, img := range image.images {
-		wrapper.CflifEncoderAddImage(e.enc, img)
-	}
-}
-
-func (e *FlifEncoder) EncodeFile(name string) error {
-	e.setOptions()
-	return checkResult(wrapper.CflifEncoderEncodeFile(e.enc, name))
-}
-
-func (e *FlifEncoder) Encode() ([]byte, error) {
-	var data []byte
-	e.setOptions()
-
-	err := checkResult(wrapper.CflifEncoderEncodeMemory(e.enc, &data))
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+func init() {
+	encoder = &wrapper.CencoderWrapper{}
 }
