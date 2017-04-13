@@ -1,6 +1,8 @@
 # Go FLIF
 
-Free Lossless Image Format([FLIF](http://flif.info/)) binding in Go.
+Go binding to [FLIF library](https://github.com/FLIF-hub/FLIF).
+
+FLIF is [Free Lossless Image Format](http://flif.info/).
 
 
 # License
