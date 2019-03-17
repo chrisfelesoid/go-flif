@@ -1,0 +1,3 @@
+[submodule "libs/flif"]
+	path = libs/flif
+	url = https://github.com/FLIF-hub/FLIF.git
